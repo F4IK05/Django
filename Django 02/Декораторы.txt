@@ -1,0 +1,33 @@
+Decorators - это функции, которые изменяют или расширяют поведение другой функции, не изменяя ее код.
+
+Пример:
+
+def decorator(func):
+    def wrapper():
+        print("Before function")
+        func()
+        print("After function")
+    return wrapper
+
+
+То есть функция wrapper, не просто вызывает эту функцию func ссылку на которую передается, но и еще дополнительно выполняет операции до ее вызова и после.
+
+Условно у нас есть, какая-то функция:
+
+def some_function():
+    print("Inside some_function")
+
+и теперь ее вызвали путем:
+
+f = decorator(some_function)
+f()
+
+
+Результатом будет:
+
+Before function
+Inside some_function
+After function
+
+
+То есть благодаря функции wrapper, декаратор расширяет функционал другой функции(some_function).
