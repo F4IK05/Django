@@ -1,9 +1,9 @@
-def fibonacci_generator(n):
+def fibonacci_generator():
     a, b = 0, 1
-    for _ in range(n):
+    while True:
         yield a
         a, b = b, a + b
 
-fib_gen = fibonacci_generator(10)
+fib_gen = fibonacci_generator()
 for _ in range(10):
     print(next(fib_gen))
