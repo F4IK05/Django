@@ -1,0 +1,107 @@
+{% extends "base/base.html" %}
+
+{% block title %}Hockey{% endblock %}
+{% block nav_hockey %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-banner {
+    background: #000;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .page-banner .big-icon svg { width: 80px; height: 80px; }
+  .page-banner h1 { font-size: 2rem; font-weight: 800; }
+  .page-banner p  { margin-top: .3rem; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e0e7ef;
+  }
+  .card h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: #000; }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: .45rem 0;
+    border-bottom: 1px solid #f0f4f8;
+    font-size: .9rem;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .label { color: #546e7a; }
+  .stat-row .value { font-weight: 600; }
+
+  .fact-list { list-style: none; }
+  .fact-list li {
+    padding: .5rem 0;
+    border-bottom: 1px solid #f0f4f8;
+    font-size: .9rem;
+    color: #37474f;
+    display: flex;
+    gap: .5rem;
+  }
+  .fact-list li:last-child { border-bottom: none; }
+  .fact-list li::before { content: "▸"; color: #000; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-banner">
+  <span class="big-icon">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <path fill="white" d="m83.609 69.84s-11.898-0.26172-18.59-0.34375c-2.2891-0.023438-4.3828-1.1953-5.6172-3.1406l-3.7539-7.9805 16.117-33.219h5.1055c1.6406 0 3.1836-0.72656 4.2305-1.9961 1.0469-1.2656 1.4648-2.9336 1.1523-4.5664-0.48828-2.5586-2.8203-4.4141-5.5391-4.4141h-8.1133c-1.8945 0-3.6875 1.0039-4.6797 2.6172-0.027344 0.042969-0.050781 0.085937-0.070313 0.13281l-13.852 29.441-13.852-29.434c-0.023438-0.046875-0.046876-0.089844-0.074219-0.13672-1-1.6211-2.793-2.6289-4.6797-2.6289h-8.1172c-2.7188 0-5.0469 1.8594-5.5312 4.418-0.31641 1.6367 0.10156 3.3008 1.1484 4.5625 1.0469 1.2656 2.5898 1.9922 4.2344 1.9922h5.1055l16.117 33.227-3.7539 7.9805c-1.2266 1.9414-3.3203 3.1133-5.6172 3.1406-6.6133 0.078124-18.477 0.33984-18.566 0.33984-3.8789 0-7.0391 3.1562-7.0391 7.0391v1.918c0 3.4648 2.5234 6.3359 5.8242 6.9141 0.12891 0.039063 0.25781 0.058594 0.39062 0.058594 0.027344 0 0.058594-0.007813 0.085937-0.011719 0.24609 0.027344 0.48438 0.074219 0.73828 0.074219h21.258c2.3398 0 4.5039-1.1641 5.8242-3.1172 0.33203-0.32422 0.625-0.69141 0.91016-1.168l5.5898-11.527 5.6484 11.625c0.22656 0.37891 0.51172 0.73047 0.86328 1.0664 1.3125 1.957 3.4766 3.1211 5.8242 3.1211h21.246c0.26562 0 0.66406-0.011719 1.0234-0.082031 0.035157-0.003907 0.0625-0.019532 0.097657-0.023438 0.046875-0.011719 0.089843-0.019531 0.13672-0.03125 3.3125-0.60156 5.7891-3.5117 5.7891-6.8945v-1.9297c0-3.8789-3.1602-7.0312-7.0156-7.0312zm-17.34-51.684c0.50781-0.78516 1.3984-1.2695 2.332-1.2695h8.1133c1.3984 0 2.6367 0.95312 2.8789 2.2148 0.16406 0.85156-0.042969 1.6797-0.58203 2.332-0.53125 0.64453-1.3125 1.0117-2.1445 1.0117h-5.9531c-0.51953 0-0.99219 0.29688-1.2188 0.76172l-1.5039 3.0977-4.3633-2.9648zm-35.969 5.0469c-0.22656-0.46875-0.69922-0.76562-1.2188-0.76562h-5.9531c-0.83203 0-1.6133-0.36719-2.1445-1.0078-0.53516-0.64844-0.73828-1.4766-0.57422-2.332 0.23828-1.2656 1.4766-2.2188 2.8711-2.2188h8.1172c0.92969 0 1.8203 0.48828 2.3398 1.2852l2.4375 5.1758-4.3633 2.9648-1.5039-3.1055zm2.7031 5.5664 4.3398-2.9492 11.164 23.727-2.6719 5.6758zm-18.012 54.094c-1.6875-0.58984-2.9102-2.1836-2.9102-4.0703v-1.918c0-2.3867 1.9414-4.3281 4.3594-4.3281 0.050782 0 2.3516-0.050781 5.4766-0.11328l-6.9258 10.434zm3.0781 0.25781 7.1406-10.758c1.668-0.03125 3.4023-0.0625 5.0781-0.09375l-7.1992 10.852zm23.965-2.875c-0.12891 0.21094-0.29297 0.40234-0.5 0.59375-0.085937 0.078125-0.16016 0.16797-0.22266 0.26562-0.80859 1.2617-2.1719 2.0156-3.6406 2.0156h-11.332l7.2344-10.902c0.5-0.007812 0.98438-0.011719 1.4375-0.019531 3.25-0.039063 6.2148-1.7148 7.9258-4.4844 0.027344-0.042969 0.050781-0.089844 0.074219-0.13672l19.648-41.758 4.3398 2.9492zm20.297 2.875c-1.4766 0-2.8359-0.75391-3.6367-2.0156-0.066406-0.10547-0.14453-0.19922-0.23828-0.28125-0.21094-0.19141-0.37109-0.37891-0.42969-0.46484l-6.5234-13.441 2.625-5.4141 2.8594 6.0742c0.023438 0.046875 0.046875 0.09375 0.074219 0.13672 1.7227 2.7773 4.6875 4.4531 7.9297 4.4844 0.45703 0.003906 0.9375 0.011719 1.4375 0.019531l7.2344 10.898h-11.328zm14.578 0-7.1992-10.848c1.6758 0.027343 3.4141 0.0625 5.0781 0.09375l7.1367 10.754zm11.008-4.3242c0 1.832-1.1875 3.4453-2.9141 4.0586l-6.9219-10.426c3.1602 0.0625 5.4844 0.11328 5.4961 0.11719 2.3906 0 4.3359 1.9375 4.3359 4.3242v1.9297z"/>
+      </svg>
+  </span>
+  <div>
+    <h1>Hockey</h1>
+    <p>Speed on ice, physical play, and the magic of the puck</p>
+  </div>
+</div>
+
+<div class="info-grid">
+  <div class="card">
+    <h2>Basic Information</h2>
+    <div class="stat-row"><span class="label">Founded</span><span class="value">1875, Canada</span></div>
+    <div class="stat-row"><span class="label">Players on ice</span><span class="value">6 (including goalie)</span></div>
+    <div class="stat-row"><span class="label">Match duration</span><span class="value">3 × 20 min</span></div>
+    <div class="stat-row"><span class="label">Rink size</span><span class="value">60 × 26–30 m</span></div>
+    <div class="stat-row"><span class="label">Federation</span><span class="value">IIHF (84 countries)</span></div>
+    <div class="stat-row"><span class="label">Puck speed</span><span class="value">up to 193 km/h</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Interesting Facts</h2>
+    <ul class="fact-list">
+      <li>The Stanley Cup is the oldest professional sports trophy in North America (since 1893).</li>
+      <li>Wayne Gretzky scored 894 goals in the NHL — an all-time record.</li>
+      <li>Hockey has been part of the Olympic Games since 1920.</li>
+      <li>Skaters in the NHL can reach speeds of up to 48 km/h.</li>
+      <li>The USSR won 7 out of 9 World Championships between 1963 and 1971.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Top Leagues</h2>
+    <div class="stat-row"><span class="label">NHL</span><span class="value">North America</span></div>
+    <div class="stat-row"><span class="label">KHL</span><span class="value">Russia / CIS</span></div>
+    <div class="stat-row"><span class="label">SHL</span><span class="value">Sweden</span></div>
+    <div class="stat-row"><span class="label">Liiga</span><span class="value">Finland</span></div>
+    <div class="stat-row"><span class="label">Extraliga</span><span class="value">Czech Republic</span></div>
+    <div class="stat-row"><span class="label">IIHF World Championship</span><span class="value">Annual</span></div>
+  </div>
+</div>
+{% endblock %}
