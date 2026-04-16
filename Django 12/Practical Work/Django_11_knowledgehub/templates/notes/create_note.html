@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Knowledge Hub - Create Note
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-5">
+
+                    <h1 class="text-center fw-bold mb-5">
+                        Create Note
+                    </h1>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {{ form.non_field_errors }}
+
+                        <div class="mb-3 row align-items-center">
+                            <label class="col-sm-4 col-form-label text-sm-end">
+                                Title:
+                            </label>
+                            <div class="col-sm-8">
+                                {{ form.title }}
+                                {{ form.title.errors }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3 row align-items-start">
+                            <label class="col-sm-4 col-form-label text-sm-end pt-2">
+                                Content:
+                            </label>
+                            <div class="col-sm-8">
+                                {{ form.content }}
+                                {{ form.content.errors }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3 row align-items-center">
+                            <label class="col-sm-4 col-form-label text-sm-end">
+                                Category:
+                            </label>
+                            <div class="col-sm-8">
+                                {{ form.category }}
+                                {{ form.category.errors }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4 row align-items-center">
+                            <label class="col-sm-4 col-form-label text-sm-end">
+                                Tags:
+                            </label>
+                            <div class="col-sm-8">
+                                {{ form.tags }}
+                                {{ form.tags.errors }}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                            Save Note
+                        </button>
+
+                    </form>
+
+                    <hr class="my-4">
+
+                    <p class="text-center mb-0">
+                        <a href="/notes/" class="text-decoration-none">
+                            ← Back to Notes List
+                        </a>
+                    </p>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
