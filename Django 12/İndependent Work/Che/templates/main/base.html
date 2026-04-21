@@ -1,0 +1,155 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Че? — Main{% endblock %}</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {% tailwind_css %}
+</head>
+<body class="bg-[#F2F2F2] leading-normal tracking-normal" x-data="{ open: true }">
+
+<div class="fixed w-full">
+
+    <nav class="bg-black p-1">
+        <div class="max-w-6xl mx-auto flex items-center">
+            {#    Logo    #}
+            <div class="flex items-center">
+                <a href="/" class="block">
+                    <svg class="w-12 h-12" viewBox="0 0 1024 1024">
+                        <path fill="white"
+                              d="M744.313 347.221C771.598 345.718 800.758 351.935 821.888 370.106C838.114 383.858 848.038 403.626 849.372 424.854C851.738 458.726 838.46 484.216 812.461 505.106C791.299 522.11 773.343 533.827 775.473 563.325L697.971 563.056C697.617 534.247 703.025 511.829 725.922 492.711C734.865 484.997 744.095 477.837 752.193 469.238C769.058 451.33 765.841 428.293 739.778 422.999C709.354 416.819 683.5 435.158 659.37 450.722C671.782 478.793 671.796 509.921 671.493 539.964C655.309 541.081 630.522 540.468 613.861 540.479L510.384 540.358C510.818 550.683 514.195 562.648 520.55 571.023C543.548 601.355 585.618 592.212 616.642 582.052C630.275 577.588 642.806 567.774 654.069 559.097C655.271 584.93 655.853 611.269 657.406 636.995C651.657 639.806 645.882 642.52 640.005 645.116C572.612 674.881 478.744 676.613 436.319 605.312C433.074 599.858 430.606 593.876 428.102 587.924C427.65 608.612 427.99 630.236 428.017 650.991C428.044 654.399 428.202 657.977 428.299 661.398L334.918 661.398L334.759 536.767C309.817 545.454 285.856 550.172 259.337 545.035C232.84 539.903 211.032 525.142 196.008 502.793C167.285 460.068 171.152 398.69 180.757 350.512L278.891 350.464C271.2 379.239 265.775 418.503 276.463 447.021C279.353 454.733 285.359 462.595 293.246 465.553C307.335 470.837 321.835 465.999 334.862 460.597L334.87 350.556C365.831 350.641 397.008 350.304 427.946 350.689C427.328 387.428 428.633 424.911 428.054 461.863C430.415 455.792 432.715 450.391 435.577 444.444C468.308 376.44 565.852 362.4 623.408 405.725C639.813 418.074 649.709 431.428 659.084 449.653C658.196 441.269 658.656 428.408 658.734 419.622C658.847 405.117 658.885 390.612 658.848 376.106C681.351 358.201 715.76 348.565 744.313 347.221Z"/>
+                        <path fill="black"
+                              d="M545.011 448.147C555.278 446.775 566.887 449.507 574.606 456.652C584.222 465.553 586.379 476.547 586.829 489.074L554.413 489.198C540.027 489.313 525.641 489.232 511.258 488.956C513.385 468.399 523.786 451.824 545.011 448.147Z"/>
+                        <path fill="white"
+                              d="M733.069 575.659C757.704 572.883 779.873 590.734 782.416 615.394C784.959 640.054 766.899 662.054 742.216 664.363C717.861 666.642 696.217 648.874 693.708 624.542C691.199 600.21 708.762 578.399 733.069 575.659Z"/>
+                    </svg>
+                </a>
+
+                <span class="w-px h-4 bg-[#f2f2f2] mx-1"></span>
+
+                <button
+                    @click="open = !open"
+                    class="flex items-center justify-center p-1 text-white hover:text-gray-300 transition"
+                >
+                    <svg
+                        :class="{ 'rotate-180': open }"
+                        class="w-6 h-6 transition-transform duration-200"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    >
+                        <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                </button>
+            </div>
+
+            {#    Search input    #}
+            <div class="flex-1 flex justify-center max-w-md mx-auto">
+                <div class="relative w-full">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none text-white/30"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input
+                        type="text"
+                        name="q"
+                        placeholder="Поиск..."
+                        class="w-full bg-white/[0.06] border border-white/10 rounded-lg py-1.5 pl-8 pr-16 text-sm text-white placeholder-white/25 outline-none focus:bg-white/[0.09] focus:border-white/25 transition-all"
+                    >
+                    <div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
+                        <kbd class="bg-white/10 border border-white/15 rounded px-1 py-px text-[11px] text-white/30 font-mono">/</kbd>
+                    </div>
+                </div>
+            </div>
+
+            {#    Sign in/Profile    #}
+            <div>
+                <a class="cursor-pointer bg-white flex items-center h-9 px-4 border border-white/30 text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors">
+                    Войти
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div
+        x-show="open"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 -translate-y-3"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 -translate-y-3"
+        class="bg-black border-t border-white/10"
+    >
+        <div class="max-w-6xl mx-auto h-15">
+
+                <div class="max-w-6xl h-full flex items-center justify-between">
+                    <div>
+                        <nav class="flex items-center h-full">
+                            <a
+                               class="flex items-center gap-1.5 px-3 h-full text-sm border-b-2 transition-colors
+                                      {% if request.resolver_match.url_name == 'feed' %}text-white border-white{% else %}text-white/50 border-transparent hover:text-white/85{% endif %}">
+                                Лента
+                            </a>
+                            <a
+                               class="flex items-center gap-1.5 px-3 h-full text-sm border-b-2 transition-colors
+                                      {% if request.resolver_match.url_name == 'articles' %}text-white border-white{% else %}text-white/50 border-transparent hover:text-white/85{% endif %}">
+                                Статьи
+                            </a>
+                            <a
+                               class="flex items-center gap-1.5 px-3 h-full text-sm border-b-2 transition-colors
+                                      {% if request.resolver_match.url_name == 'posts' %}text-white border-white{% else %}text-white/50 border-transparent hover:text-white/85{% endif %}">
+                                Посты
+    {#                            <span class="bg-red-950 text-red-400 text-[10px] px-1.5 py-px rounded-full leading-none">Горячее</span>#}
+                            </a>
+                            <a
+                               class="flex items-center gap-1.5 px-3 h-full text-sm border-b-2 transition-colors
+                                      {% if request.resolver_match.url_name == 'news' %}text-white border-white{% else %}text-white/50 border-transparent hover:text-white/85{% endif %}">
+                                Новости
+                            </a>
+                            <a
+                               class="flex items-center gap-1.5 px-3 h-full text-sm border-b-2 transition-colors
+                                      {% if request.resolver_match.url_name == 'authors' %}text-white border-white{% else %}text-white/50 border-transparent hover:text-white/85{% endif %}">
+                                Авторы
+    {#                            <span class="bg-green-950 text-green-400 text-[10px] px-1.5 py-px rounded-full leading-none">Новое</span>#}
+                            </a>
+                        </nav>
+
+                    </div>
+                    <div class="flex gap-1">
+
+                        <a href="{% url 'create_category' %}" class="flex items-center gap-1.5 bg-white text-black text-xs font-medium px-3 h-7 rounded-lg hover:bg-white/88 transition-colors shrink-0">
+                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Создать категорию
+                        </a>
+                        {#                {% if user.is_authenticated %}#}
+                        <a href="{% url 'create_article' %}" class="flex items-center gap-1.5 bg-white text-black text-xs font-medium px-3 h-7 rounded-lg hover:bg-white/88 transition-colors shrink-0">
+                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Написать
+                        </a>
+                        {#                {% endif %}#}
+                    </div>
+
+
+
+                </div>
+
+
+        </div>
+    </div>
+</div>  
+
+
+<main class="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300"
+      :class="open ? 'pt-34' : 'pt-16'">
+    {% block content %}
+    {% endblock %}
+</main>
+</body>
+</html>

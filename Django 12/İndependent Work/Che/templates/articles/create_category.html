@@ -1,0 +1,46 @@
+{% extends "main/base.html" %}
+
+{% block title %}Создание категории{% endblock %}
+
+{% block content %}
+
+<div class="max-w-xl mx-auto rounded-xl shadow p-6 text-black bg-white">
+
+    <h1 class="text-2xl font-bold mb-6">Создание новой категории</h1>
+
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Название категории</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.name.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Слаг (URL-идентификатор)</label>
+            {{ form.slug }}
+            <p class="text-gray-400 text-xs mt-1">Используйте только латиницу, цифры и дефис (например: "it-news")</p>
+            {% if form.slug.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.slug.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button type="submit"
+                    class="bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-800 transition">
+                Создать категорию
+            </button>
+            
+            <a href="{% url 'articles' %}" 
+               class="border border-gray-300 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-50 transition text-center">
+                Отмена
+            </a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}
