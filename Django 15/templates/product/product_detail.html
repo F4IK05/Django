@@ -1,0 +1,54 @@
+{% extends "main/base.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h2>{{ product.name }}</h2>
+    <p>{{ product.description }}</p>
+    <small>Дата: {{ product.created_at }}</small>
+</div>
+
+<hr>
+
+<h3>Отзывы</h3>
+
+{% for review in reviews %}
+    <div class="card">
+        <strong>{{ review.user.username }}</strong>
+        <p>{{ review.text }}</p>
+        <p>Рейтинг: ⭐ {{ review.rating }}</p>
+        <small>{{ review.created_at }}</small>
+    </div>
+{% empty %}
+    <p>Пока нет отзывов</p>
+{% endfor %}
+
+<hr>
+
+<h3>Оставить отзыв</h3>
+
+{% if user.is_authenticated %}
+    <form method="post" action="{% url 'add_review' product.id %}">
+        {% csrf_token %}
+
+        <div>
+            <label>Текст:</label><br>
+            {{ form.text }}
+        </div>
+
+        <div style="margin-top: 10px;">
+            <label>Рейтинг:</label><br>
+            {{ form.rating }}
+        </div>
+
+        <button type="submit" style="margin-top: 10px;">
+            Отправить
+        </button>
+    </form>
+{% else %}
+    <p>👉 Войдите, чтобы оставить отзыв</p>
+{% endif %}
+
+{% endblock %}

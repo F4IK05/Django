@@ -1,0 +1,33 @@
+{% extends "main/base.html" %}
+
+{% block title %}Редактировать отзыв{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h2>Редактировать отзыв</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div>
+            <label>Текст отзыва:</label><br>
+            {{ form.text }}
+        </div>
+
+        <div style="margin-top: 10px;">
+            <label>Рейтинг:</label><br>
+            {{ form.rating }}
+        </div>
+
+        <button type="submit" style="margin-top: 15px;">
+            Сохранить
+        </button>
+    </form>
+
+    <a href="{% url 'product_detail' form.instance.product.id %}">
+        ← Назад к продукту
+    </a>
+</div>
+
+{% endblock %}

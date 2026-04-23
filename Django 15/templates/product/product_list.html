@@ -1,0 +1,22 @@
+{% extends "main/base.html" %}
+
+{% block title %}Список продуктов{% endblock %}
+
+{% block content %}
+
+<h2>Все продукты</h2>
+
+{% for product in products %}
+    <div class="card">
+        <h3>
+            <a href="{% url 'product_detail' product.id %}">
+                {{ product.name }}
+            </a>
+        </h3>
+
+        <p>{{ product.description }}</p>
+        <small>Дата: {{ product.created_at }}</small>
+    </div>
+{% endfor %}
+
+{% endblock %}
