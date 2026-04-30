@@ -1,0 +1,17 @@
+{% extends "main/base.html" %}
+
+{% block title %}Редактировать{% endblock %}
+
+{% block content %}
+
+<h2>Редактировать фильм</h2>
+
+<form method="post">
+    {% csrf_token %}
+    
+    {{ form.as_p }}
+
+    <button class="btn btn-primary">Обновить</button>
+</form>
+
+{% endblock %}

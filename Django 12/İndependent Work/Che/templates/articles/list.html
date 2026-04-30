@@ -1,4 +1,5 @@
 {% extends "main/base.html" %}
+{% load article_filters %}
 
 {% block title %}Статьи{% endblock %}
 
@@ -9,12 +10,12 @@
     {% for article in articles %}
         <div class="bg-white p-5">
 
-            <p class="text-xs text-gray-500 mb-1 uppercase">
+            <p class="text-xs text-gray-500 mb-4 uppercase">
                 {{ article.category.name }}
             </p>
 
-            <p class="text-sm mb-3">
-                <span class="text-black font-semibold">{{ article.author }}</span> <span class="text-gray-400">{{ article.created_at|timesince }}</span>
+            <p class="text-[12px] h-9">
+                <span class="text-black font-semibold">{{ article.author }}</span> <span class="text-gray-400">{{ article.created_at|smart_timesince }} назад</span>
             </p>
 
             <a href="{% url 'article_detail' article.id %}">
@@ -29,7 +30,7 @@
             {% endif %}
 
             <p class="text-gray-700 mb-3">
-                {{ article.mini_content }}
+                {{ article.mini_content|safe }}
             </p>
 
             <div class="flex items-center justify-between">

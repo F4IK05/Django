@@ -7,27 +7,18 @@ from articles.models import Article, Category
 class ArticleForm(ModelForm):
     class Meta:
         model = Article
-        fields = ['title', 'author', 'category', 'image', 'content']
+        fields = ['title', 'category', 'image', 'content']
 
         widgets = {
             'title': forms.TextInput(attrs={
                 'placeholder': 'Заголовок',
                 'class': 'text-[40px] w-full border rounded-lg px-3 py-2 border-none h-15 focus:outline-none',
             }),
-            'author': forms.TextInput(attrs={
-                'placeholder': 'Автор',
-                'class': 'w-full border rounded-lg px-3 py-2 border-none'
-            }),
             'category': forms.Select(attrs={
                 'class': 'w-full border rounded-lg px-3 py-2 '
             }),
             'image': forms.ClearableFileInput(attrs={
                 'class': 'w-full'
-            }),
-            'content': forms.Textarea(attrs={
-                'placeholder': 'Основной контент',
-                'class': 'w-full border rounded-lg px-3 py-2',
-                'rows': 6
             }),
         }
 

@@ -1,0 +1,66 @@
+{% extends "main/base.html" %}
+
+{% block title %}Мои фильмы{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-3">Мои фильмы</h2>
+
+<a href="{% url 'add_movie' %}" class="btn btn-primary mb-3">Добавить фильм</a>
+
+<form method="get" class="row mb-4">
+    <div class="col">
+        <select name="status" class="form-select">
+            <option value="">Все статусы</option>
+            <option value="planned">Хочу посмотреть</option>
+            <option value="watching">Смотрю</option>
+            <option value="watched">Посмотрел</option>
+        </select>
+    </div>
+
+    <div class="col">
+        <select name="genre" class="form-select">
+            <option value="">Все жанры</option>
+            {% for genre in genres %}
+                <option value="{{ genre.id }}">{{ genre.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col">
+        <button class="btn btn-dark w-100">Фильтр</button>
+    </div>
+</form>
+
+{% for movie in movies %}
+<div class="card mb-3">
+    <div class="card-body">
+
+        <h5>{{ movie.title }}</h5>
+
+        <p class="mb-1">
+            <strong>Жанр:</strong> {{ movie.genre.name }}
+        </p>
+
+        <p class="mb-1">
+            <strong>Год:</strong> {{ movie.release_year }}
+        </p>
+
+        <p class="mb-1">
+            <strong>Статус:</strong> {{ movie.get_status_display }}
+        </p>
+
+        <p class="mb-2">
+            <strong>Оценка:</strong> {{ movie.rating|default:"—" }}
+        </p>
+
+        <a href="{% url 'edit_movie' movie.id %}" class="btn btn-warning btn-sm">✏️ Редактировать</a>
+        <a href="{% url 'delete_movie' movie.id %}" class="btn btn-danger btn-sm">🗑 Удалить</a>
+
+    </div>
+</div>
+{% empty %}
+<p>У тебя пока нет фильмов.</p>
+{% endfor %}
+
+{% endblock %}

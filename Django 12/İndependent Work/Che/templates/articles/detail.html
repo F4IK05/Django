@@ -1,31 +1,154 @@
 {% extends "main/base.html" %}
+{% load article_filters %}
 
 {% block title %}{{ article.title }}{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto py-10">
 
-    <p class="text-sm mb-3">
-        <span class="text-black font-semibold">{{ article.author }}</span> <span class="text-gray-400">{{ article.created_at|timesince }}</span>
-    </p>
+    <div class="flex items-center gap-3 text-sm mb-6">
+        <span class="bg-black text-white px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">
+            {{ article.category.name }}
+        </span>
+        <span class="text-gray-900 font-semibold">{{ article.author }}</span>
+        <span class="text-gray-400">{{ article.created_at|smart_timesince }} назад</span>
+    </div>
 
-    <h1 class="text-2xl font-bold mb-2 text-black">
+    <h1 class="text-4xl font-extrabold mb-6 text-black leading-tight">
         {{ article.title }}
     </h1>
 
-    <p class="text-xs text-gray-500 mb-2">
-        {{ article.category.name }}
-    </p>
-
     {% if article.image %}
-        <img src="{{ article.image.url }}" class="rounded-lg mb-6 w-full">
+        <div class="mb-10">
+            <img src="{{ article.image.url }}" class="rounded-2xl w-full shadow-lg">
+        </div>
     {% endif %}
 
-    <div class="text-lg text-black space-y-4">
-        {{ article.content }}
-    </div>
+    <div id="editorjs-content" class="article-body"></div>
 
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        function parseEditorJsData(blocks) {
+            if (!blocks || blocks.length === 0) return '';
+
+            return blocks.map(block => {
+                const data = block.data;
+                const type = block.type.toLowerCase();
+
+                switch (type) {
+                    case 'paragraph':
+                        return `<p class="mb-6 text-gray-800 leading-relaxed text-lg">${data.text}</p>`;
+
+                    case 'header':
+                        const sizes = { 1: 'text-4xl', 2: 'text-3xl', 3: 'text-2xl' };
+                        const sizeClass = sizes[data.level] || 'text-xl';
+                        const borderClass = data.level === 2 ? 'border-b border-gray-100 pb-2 mb-6 mt-12' : 'mb-4 mt-8';
+                        return `<h${data.level} class="${sizeClass} font-bold text-black ${borderClass}">${data.text}</h${data.level}>`;
+
+                    case 'list':
+                        const isOrdered = data.style === 'ordered';
+                        const tag = isOrdered ? 'ol' : 'ul';
+                        const listStyle = isOrdered ? 'list-style-type: decimal;' : 'list-style-type: disc;';
+
+                        const listItems = data.items.map(item => {
+                            const text = typeof item === 'string' ? item : item.content;
+                            return `<li class="pl-2 mb-2">${text}</li>`;
+                        }).join('');
+
+                        return `<${tag} style="${listStyle}" class="ml-8 my-6 space-y-2 text-gray-800 text-lg marker:text-black marker:font-bold">${listItems}</${tag}>`;
+
+                    case 'checklist':
+                        const checkItems = data.items.map(item => {
+                            const isChecked = item.checked ? 'checked' : '';
+                            const textClass = item.checked ? 'line-through text-gray-400' : 'text-gray-800';
+                            return `
+                                <div class="flex items-start gap-3 my-3">
+                                    <input type="checkbox" ${isChecked} disabled class="mt-1.5 w-4 h-4 accent-black">
+                                    <span class="${textClass} text-lg">${item.text}</span>
+                                </div>
+                            `;
+                        }).join('');
+                        return `<div class="my-8 bg-gray-50 p-6 rounded-xl border border-gray-100">${checkItems}</div>`;
+
+                    case 'image':
+                        const caption = data.caption ? `<figcaption class="text-center text-sm text-gray-500 mt-3 italic">${data.caption}</figcaption>` : '';
+                        return `
+                            <figure class="my-10">
+                                <img src="${data.file.url}" class="rounded-xl w-full shadow-md">
+                                ${caption}
+                            </figure>
+                        `;
+
+                    case 'quote':
+                        const footer = data.caption ? `<footer class="text-sm font-bold text-gray-500 mt-3">— ${data.caption}</footer>` : '';
+                        return `
+                            <blockquote class="border-l-4 border-black bg-gray-50 p-6 my-8 italic text-xl text-gray-700 rounded-r-lg">
+                                ${data.text}
+                                ${footer}
+                            </blockquote>
+                        `;
+
+                    case 'raw':
+                        const safeHtml = data.html
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;");
+
+                        return `
+                            <div class="my-6 relative">
+                                <pre class="bg-gray-800 text-gray p-5 rounded-lg overflow-x-auto font-mono text-sm"><code>${safeHtml}</code></pre>
+                            </div>
+                        `;
+
+                    case 'delimiter':
+                        return `<div class="text-center text-4xl text-gray-300 my-12 tracking-[1em]">***</div>`;
+
+                    default:
+                        return '';
+                }
+            }).join('');
+        }
+
+        // Рендеринг контента
+        const rawContent = '{{ article.content|escapejs }}';
+        if (rawContent && rawContent !== 'null') {
+            try {
+                const jsonContent = JSON.parse(rawContent);
+                const htmlContent = parseEditorJsData(jsonContent.blocks || []);
+                const contentDiv = document.getElementById('editorjs-content');
+                contentDiv.innerHTML = htmlContent;
+
+                // Запускаем подсветку синтаксиса после вставки HTML
+                if (typeof Prism !== 'undefined') {
+                    Prism.highlightAll();
+                }
+            } catch (e) {
+                console.error('Parsing error:', e);
+            }
+        }
+    });
+</script>
+
+<style>
+    /* Улучшаем читаемость ссылок внутри параграфов */
+    .article-body p a {
+        color: #000;
+        text-decoration: underline;
+        font-weight: 500;
+    }
+    /* Стили для Prism.js (чтобы фон превью не конфликтовал с темой) */
+    pre[class*="language-"] {
+        margin: 0 !important;
+    }
+</style>
 {% endblock %}

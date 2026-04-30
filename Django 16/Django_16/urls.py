@@ -1,5 +1,5 @@
 """
-URL configuration for che project.
+URL configuration for Django_16 project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
@@ -16,15 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.conf.urls.static import static
-from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('articles.urls')),
-    path('accounts/', include('accounts.urls')),
-    path('__reload__/', include('django_browser_reload.urls')),
+    path('', include('movies.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
