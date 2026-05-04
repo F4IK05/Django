@@ -1,0 +1,85 @@
+{% extends "main/base.html" %}
+
+{% block title %}Уведомления{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-8 pb-16">
+
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold text-gray-900">Уведомления</h1>
+        {% if notifications %}
+        <form action="{% url 'accounts:clear_notifications' %}" method="post">
+            {% csrf_token %}
+            <button type="submit"
+                    class="px-4 py-2 border border-gray-200 text-sm text-gray-500 rounded-lg hover:bg-gray-50 hover:text-red-500 transition-colors">
+                Очистить все
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded border border-gray-200">
+        <div class="divide-y divide-gray-100">
+            {% for notif in notifications %}
+            <div class="px-6 py-4 flex items-start gap-4 {% if not notif.is_read %}bg-blue-50{% endif %}">
+
+                {# Иконка #}
+                <div class="shrink-0 mt-0.5">
+                    {% if notif.type == 'approved' %}
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                    {% elif notif.type == 'rejected' %}
+                        <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-alert-icon lucide-circle-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                        </div>
+                    {% else %}
+                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Текст #}
+                <div class="flex-1 min-w-0">
+                    {% if notif.type == 'approved' %}
+                        <p class="text-sm text-gray-900">
+                            Ваша статья
+                            <a href="{% url 'article_detail' notif.article_id %}"
+                               class="font-semibold hover:underline">«{{ notif.article_title }}»</a>
+                            была <span class="text-green-600 font-medium">одобрена</span> и опубликована.
+                        </p>
+                    {% elif notif.type == 'rejected' %}
+                        <p class="text-sm text-gray-900">
+                            Ваша статья
+                            <span class="font-semibold">«{{ notif.article_title }}»</span>
+                            была <span class="text-red-600 font-medium">отклонена</span> и возвращена в черновики.
+                        </p>
+                    {% else %}
+                        <p class="text-sm text-gray-900">
+                            Ваша статья
+                            <a href="{% url 'article_detail' notif.article_id %}"
+                               class="font-semibold hover:underline">«{{ notif.article_title }}»</a>
+                            отправлена на <span class="text-orange-600 font-medium">модерацию</span>.
+                        </p>
+                    {% endif %}
+                    <p class="text-xs text-gray-400 mt-1">{{ notif.created_at|date:"d.m.Y H:i" }}</p>
+                </div>
+
+            </div>
+            {% empty %}
+            <div class="px-6 py-12 text-center">
+                <p class="text-gray-400 text-sm">Уведомлений пока нет</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

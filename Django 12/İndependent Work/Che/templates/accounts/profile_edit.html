@@ -1,0 +1,139 @@
+{% extends "main/base.html" %}
+
+{% block title %}Настройки профиля{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 mb-16">
+
+    {# Заголовок #}
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Настройки</h1>
+
+    {# Табы #}
+    <div class="border-b border-gray-200 mb-8">
+        <nav class="flex gap-0 -mb-px">
+            <a href="#"
+               class="px-5 py-3 text-sm font-semibold border-b-2 border-black text-black whitespace-nowrap">
+                Профиль
+            </a>
+            <a href="#"
+               class="cursor-no-drop px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600 whitespace-nowrap">
+                Аккаунт
+            </a>
+            <a href="#"
+               class="cursor-no-drop px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600 whitespace-nowrap">
+                Приватность
+            </a>
+            <a href="#"
+               class="cursor-no-drop px-5 py-3 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-600 whitespace-nowrap">
+                Уведомления
+            </a>
+        </nav>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="flex gap-12">
+
+            {# Левая колонка — поля #}
+            <div class="flex-1 space-y-8">
+
+                {# Имя пользователя #}
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-sm font-semibold text-gray-800">Имя пользователя</label>
+                        <span class="text-xs text-gray-400">{{ form.username.value|length|default:0 }} / 150</span>
+                    </div>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.username.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-400 mt-1.5">Буквы, цифры и символы @./+/-/_</p>
+                </div>
+
+                {# О себе #}
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-sm font-semibold text-gray-800">О себе</label>
+                    </div>
+                    {{ form.bio }}
+                    {% if form.bio.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.bio.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-400 mt-1.5">Расскажите другим пользователям кто вы</p>
+                </div>
+
+                {# Кнопки #}
+                <div class="flex gap-3 pt-2">
+                    <button type="submit"
+                            class="px-8 py-2.5 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                        Сохранить
+                    </button>
+                    <a href="/"
+                       class="px-8 py-2.5 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                        Отмена
+                    </a>
+                </div>
+
+            </div>
+
+            {# Правая колонка — аватар #}
+            <div class="w-56 shrink-0">
+                <p class="text-sm font-semibold text-gray-800 mb-3">Аватар</p>
+
+                <div class="relative group w-32 h-32 mb-4 cursor-pointer"
+                     onclick="document.getElementById('avatar-input').click()">
+                    {% if user.avatar %}
+                        <img id="avatar-preview"
+                             src="{{ user.avatar.url }}"
+                             alt="{{ user.username }}"
+                             class="w-32 h-32 rounded object-cover border border-gray-200">
+                    {% else %}
+                        <div id="avatar-placeholder"
+                             class="w-32 h-32 rounded bg-gray-100 border border-gray-200 flex items-center justify-center">
+                            <span class="text-gray-400 text-4xl font-bold select-none">
+                                {{ user.username|slice:":1"|upper }}
+                            </span>
+                        </div>
+                        <img id="avatar-preview"
+                             class="w-32 h-32 rounded object-cover border border-gray-200 hidden">
+                    {% endif %}
+
+                    <div class="absolute inset-0 rounded bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                    </div>
+                </div>
+
+                {{ form.avatar }}
+
+                <p class="text-xs text-gray-800 leading-relaxed">
+                    Для замены аватарки коснитесь нынешней.
+                </p>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('avatar-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById('avatar-preview');
+        const placeholder = document.getElementById('avatar-placeholder');
+
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+        if (placeholder) placeholder.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+});
+</script>
+
+{% endblock %}

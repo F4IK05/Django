@@ -14,6 +14,11 @@ class Category(models.Model):
         return self.name
 
 class Article(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = 'draft', 'Черновик'
+        PENDING = 'pending', 'На модерации'
+        PUBLISHED = 'published', 'Опубликована'
+
     title = models.CharField(max_length=100)
 
     author = models.ForeignKey(
@@ -49,6 +54,12 @@ class Article(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT,
+    )
 
     def mini_content(self):
         if not self.content:
@@ -89,3 +100,25 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+class Bookmark(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='bookmarks'
+    )
+
+    article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='bookmarks'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Чтобы к одной и той же статье нельзя было создавать более одной закладки
+    class Meta:
+        unique_together = ('user', 'article')
+
+    def __str__(self):
+        return f'{self.user} {self.article}'

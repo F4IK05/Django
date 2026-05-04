@@ -1,0 +1,178 @@
+{% extends "main/base.html" %}
+
+{% block title %}Админ панель{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto mt-8 pb-16">
+
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl text-gray-800 font-bold">Админ панель</h1>
+        {% if user.is_admin %}
+            <a href="{% url 'category_list_admin' %}"
+               class="flex items-center gap-1.5 border border-gray-200 text-gray-700 text-sm font-medium px-4 h-9 rounded-lg hover:bg-gray-50 transition-colors">
+                Список категорий
+            </a>
+        {% endif %}
+    </div>
+
+    {# На модерации #}
+    {% if pending %}
+    <div class="bg-white rounded border border-orange-200 mb-8">
+        <div class="px-6 py-4 border-b border-orange-100">
+            <h2 class="text-lg text-gray-800 font-semibold flex items-center gap-2">
+                На модерации
+                <span class="px-2 py-0.5 bg-orange-100 text-orange-600 text-xs rounded-full font-medium">
+                    {{ pending.count }}
+                </span>
+            </h2>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for article in pending %}
+            <div class="px-6 py-4 flex items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <a href="{% url 'article_detail' article.id %}"
+                       class="font-medium text-sm text-gray-900 hover:underline truncate block">
+                        {{ article.title }}
+                    </a>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                        {{ article.author.username }} · {{ article.created_at|date:"d.m.Y" }}
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <form action="{% url 'approve_article' article.pk %}" method="post" class="flex gap-2">
+                        {% csrf_token %}
+                        <button name="action" value="approve" type="submit"
+                                class="px-3 py-1.5 border border-green-200 text-xs rounded-lg text-green-600 hover:bg-green-50 transition-colors">
+                            Одобрить
+                        </button>
+                        <button name="action" value="reject" type="submit"
+                                class="px-3 py-1.5 border border-red-200 text-xs rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+                            Отклонить
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# Пользователи #}
+    <div class="bg-white rounded border border-gray-200 mb-8">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-lg text-gray-800 font-semibold">Пользователи</h2>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for u in users %}
+            <div class="px-6 py-4 flex items-center justify-between gap-4">
+
+                <div class="flex items-center gap-3 min-w-0">
+                    {% if u.avatar %}
+                        <img src="{{ u.avatar.url }}"
+                             class="w-9 h-9 rounded object-cover shrink-0">
+                    {% else %}
+                        <div class="w-9 h-9 rounded bg-gray-100 flex items-center justify-center shrink-0">
+                            <span class="text-sm font-bold text-gray-400">
+                                {{ u.username|slice:":1"|upper }}
+                            </span>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <p class="font-medium text-sm text-gray-900">{{ u.username }}</p>
+                        <p class="text-xs text-gray-400">
+                            {% if u.is_superuser %}Супер админ
+                            {% elif u.is_staff %}Админ
+                            {% else %}Пользователь{% endif %}
+                        </p>
+                    </div>
+                    {% if u.is_banned %}
+                        <span class="px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded-full">Заблокирован</span>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                    {% if request.user.is_superuser and not u.is_superuser %}
+                    <form action="{% url 'accounts:change_role' u.pk %}"
+                          method="post"
+                          class="flex items-center gap-1">
+                        {% csrf_token %}
+                        <select name="role"
+                                class="text-xs text-gray-800 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none">
+                            <option value="user" {% if not u.is_staff %}selected{% endif %}>Пользователь</option>
+                            <option value="admin" {% if u.is_staff %}selected{% endif %}>Админ</option>
+                        </select>
+                        <button type="submit"
+                                class="px-2 py-1.5 bg-black text-white text-xs rounded-lg hover:bg-gray-800 transition-colors">
+                            Сохранить
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if not u.is_superuser %}
+                        {% if not u.is_staff or request.user.is_superuser %}
+                        <form action="{% url 'accounts:ban_user' u.pk %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="px-3 py-1.5 text-xs rounded-lg border transition-colors
+                                    {% if u.is_banned %}border-green-200 text-green-600 hover:bg-green-50
+                                    {% else %}border-red-200 text-red-500 hover:bg-red-50{% endif %}">
+                                {% if u.is_banned %}Разбанить{% else %}Забанить{% endif %}
+                            </button>
+                        </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+                <p class="px-6 py-4 text-sm text-gray-800">Нет пользователей</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Статьи #}
+    <div class="bg-white rounded border border-gray-200 mb-8">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="text-lg text-gray-800 font-semibold">Все статьи</h2>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for article in articles %}
+            <div class="px-6 py-4 flex items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <a href="{% url 'article_detail' article.id %}"
+                       class="font-medium text-sm text-gray-900 hover:underline truncate block">
+                        {{ article.title }}
+                    </a>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                        {{ article.author.username }} · {{ article.created_at|date:"d.m.Y" }}
+                        {% if article.status == 'draft' %}
+                            <span class="text-gray-400">· Черновик</span>
+                        {% elif article.status == 'pending' %}
+                            <span class="text-orange-500">· На модерации</span>
+                        {% elif article.status == 'published' %}
+                            <span class="text-green-500">· Опубликована</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a href="{% url 'edit_article_step1' article.pk %}"
+                       class="px-3 py-1.5 border border-gray-200 text-xs rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+                        Редактировать
+                    </a>
+                    <form action="{% url 'delete_article' article.pk %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit"
+                                onclick="return confirm('Удалить статью?')"
+                                class="px-3 py-1.5 border border-red-200 text-xs rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+                <p class="px-6 py-4 text-sm text-gray-400">Нет статей</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

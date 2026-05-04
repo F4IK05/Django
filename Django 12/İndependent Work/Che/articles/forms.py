@@ -4,21 +4,28 @@ from django.forms.models import ModelForm
 from articles.models import Article, Category
 
 
-class ArticleForm(ModelForm):
+class ArticleStepOneForm(ModelForm):
     class Meta:
         model = Article
-        fields = ['title', 'category', 'image', 'content']
+        fields = ['title', 'content']
 
         widgets = {
             'title': forms.TextInput(attrs={
                 'placeholder': 'Заголовок',
-                'class': 'text-[40px] w-full border rounded-lg px-3 py-2 border-none h-15 focus:outline-none',
+                'class': 'text-[40px] font-bold w-full border rounded-lg px-3 py-2 border-none h-15 focus:outline-none',
             }),
+        }
+
+class ArticleStepTwoForm(ModelForm):
+    class Meta:
+        model = Article
+        fields = ['category', 'image']
+        widgets = {
             'category': forms.Select(attrs={
-                'class': 'w-full border rounded-lg px-3 py-2 '
+                'class': 'text-gray-800 w-full border rounded-lg px-3 py-2'
             }),
             'image': forms.ClearableFileInput(attrs={
-                'class': 'w-full'
+                'class': 'text-gray-800 w-full'
             }),
         }
 

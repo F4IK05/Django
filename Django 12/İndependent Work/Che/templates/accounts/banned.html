@@ -1,0 +1,14 @@
+{% extends "main/base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto mt-20 text-center">
+    <h1 class="text-3xl font-bold text-red-600 mb-4">Аккаунт заблокирован</h1>
+    <p class="text-gray-500 mb-6">Ваш аккаунт был заблокирован администратором.</p>
+    <form action="{% url 'accounts:logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit"
+                class="px-6 py-2 bg-black text-white rounded-lg">
+            Выйти
+        </button>
+    </form>
+</div>
+{% endblock %}

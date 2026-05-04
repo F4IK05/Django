@@ -1,0 +1,140 @@
+{% extends "main/base.html" %}
+
+{% block title %}{{ profile_user.username }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 mb-16">
+
+    {# Шапка профиля #}
+    <div class="bg-white rounded border border-gray-200 p-6 mb-6">
+        <div class="flex items-start gap-5">
+
+            {# Аватар #}
+            {% if profile_user.avatar %}
+                <img src="{{ profile_user.avatar.url }}"
+                     alt="{{ profile_user.username }}"
+                     class="w-20 h-20 rounded-xl object-cover shrink-0 border border-gray-200">
+            {% else %}
+                <div class="w-20 h-20 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                    <span class="text-3xl font-bold text-gray-400">
+                        {{ profile_user.username|slice:":1"|upper }}
+                    </span>
+                </div>
+            {% endif %}
+
+            {# Инфо #}
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">{{ profile_user.username }}</h1>
+                        <p class="text-sm text-gray-400 mt-0.5">
+                            На сайте с {{ profile_user.date_joined|date:"d E Y" }}
+                        </p>
+                    </div>
+
+                    {% if request.user == profile_user %}
+                        <a href="{% url 'accounts:profile_edit' %}"
+                           class="shrink-0 px-4 py-2 border border-gray-200 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
+                            Редактировать
+                        </a>
+                    {% endif %}
+                </div>
+
+                {% if profile_user.bio %}
+                    <p class="text-gray-600 text-sm mt-3 leading-relaxed">{{ profile_user.bio }}</p>
+                {% endif %}
+
+                <div class="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                    <span><strong class="text-gray-900">{{ articles.count }}</strong> статей</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Табы #}
+    <div class="border-b border-gray-200 mb-6" x-data="{ tab: new URLSearchParams(window.location.search).get('tab') || 'articles' }">
+        <nav class="flex gap-0 -mb-px">
+            <button @click="tab = 'articles'"
+                    :class="tab === 'articles' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-600'"
+                    class="px-5 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors">
+                Статьи <span class="text-xs text-gray-400 ml-1">{{ articles.count }}</span>
+            </button>
+            {% if request.user == profile_user %}
+            <button @click="tab = 'bookmarks'"
+                    :class="tab === 'bookmarks' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-600'"
+                    class="px-5 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors">
+                Закладки <span class="text-xs text-gray-400 ml-1">{{ bookmarks.count }}</span>
+            </button>
+            {% endif %}
+        </nav>
+
+        {# Статьи #}
+        <div x-show="tab === 'articles'" class="space-y-4 mt-6">
+            {% for article in articles %}
+                <div class="bg-white rounded border border-gray-200 p-5">
+
+                    <p class="text-xs text-gray-400 uppercase mb-2">{{ article.category.name }}</p>
+
+                    <a href="{% url 'article_detail' article.id %}">
+                        <h2 class="text-lg font-bold text-gray-900 hover:text-gray-600 transition-colors mb-2">
+                            {{ article.title }}
+                        </h2>
+                    </a>
+
+                    {% if article.image %}
+                        <img src="{{ article.image.url }}" class="rounded-lg mb-3 w-full object-cover max-h-48">
+                    {% endif %}
+
+                    <div class="text-sm text-gray-600">
+                        {{ article.mini_content|safe }}
+                    </div>
+
+                    <div class="flex items-center justify-between mt-4">
+                        <a href="{% url 'article_detail' article.id %}"
+                           class="text-sm text-black font-medium border p-2 hover:text-white hover:bg-black transition-colors">
+                            Читать далее
+                        </a>
+                        <span class="text-xs text-gray-400">{{ article.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="bg-white rounded-xl border border-gray-200 p-10 text-center">
+                    <p class="text-gray-400 text-sm">Статей пока нет</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Закладки #}
+        {% if request.user == profile_user %}
+            <div x-show="tab === 'bookmarks'" class="space-y-4 mt-6">
+                {% for bookmark in bookmarks %}
+                    <div class="bg-white rounded border border-gray-200 p-5">
+                        <p class="text-xs text-gray-400 uppercase mb-2">{{ bookmark.article.category.name }}</p>
+                        <a href="{% url 'article_detail' bookmark.article.id %}">
+                            <h2 class="text-lg font-bold text-gray-900 hover:text-gray-600 transition-colors">
+                                {{ bookmark.article.title }}
+                            </h2>
+                        </a>
+                        <div class="flex items-center justify-between mt-3">
+                            <span class="text-xs text-gray-400">
+                                {{ bookmark.article.author.username }} · {{ bookmark.article.created_at|date:"d.m.Y" }}
+                            </span>
+                            <a href="{% url 'article_detail' bookmark.article.id %}"
+                               class="text-sm text-black font-medium border p-2 hover:text-white hover:bg-black transition-colors">
+                                Читать далее
+                            </a>
+
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="bg-white rounded border border-gray-200 p-10 text-center">
+                        <p class="text-gray-400 text-sm">Закладок пока нет</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

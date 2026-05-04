@@ -1,0 +1,72 @@
+{% extends "main/base.html" %}
+{% load article_filters %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-8 mb-16">
+
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ category.name }}</h1>
+            <p class="text-sm text-gray-400 mt-0.5">{{ articles.count }} статей</p>
+        </div>
+        {% if user.is_admin %}
+        <a href="{% url 'edit_category' category.pk %}"
+           class="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Переименовать
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="space-y-4">
+        {% for article in articles %}
+        <div class="bg-white p-5 rounded border border-gray-200">
+            <p class="text-[12px] flex items-center gap-1 mb-2">
+                {% if article.author.avatar %}
+                    <img src="{{ article.author.avatar.url }}" class="w-5 h-5 rounded object-cover">
+                {% else %}
+                    <span class="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500">
+                        {{ article.author.username|slice:":1"|upper }}
+                    </span>
+                {% endif %}
+                <a href="{% url 'accounts:profile_view' article.author.username %}"
+                   class="text-black font-semibold hover:underline">
+                    {{ article.author }}
+                </a>
+                <span class="text-gray-400">{{ article.created_at|smart_timesince }} назад</span>
+            </p>
+
+            <a href="{% url 'article_detail' article.id %}">
+                <h2 class="text-xl font-bold text-black hover:text-gray-600 transition-colors mb-2">
+                    {{ article.title }}
+                </h2>
+            </a>
+
+            {% if article.image %}
+                <img src="{{ article.image.url }}" class="rounded-lg mb-3 w-full object-cover max-h-48">
+            {% endif %}
+
+            <div class="text-gray-700 text-sm">{{ article.mini_content|safe }}</div>
+
+            <div class="flex items-center justify-between mt-4">
+                <a href="{% url 'article_detail' article.id %}"
+                   class="text-sm text-black font-medium border p-2 hover:text-white hover:bg-black transition-colors">
+                    Читать далее
+                </a>
+                <span class="text-xs text-gray-400">{{ article.created_at|date:"d.m.Y" }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white rounded border border-gray-200 p-10 text-center">
+            <p class="text-gray-400">В этой категории пока нет статей</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

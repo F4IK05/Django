@@ -8,11 +8,22 @@
 
 <div class="max-w-3xl mx-auto py-10">
 
-    <div class="flex items-center gap-3 text-sm mb-6">
-        <span class="bg-black text-white px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">
-            {{ article.category.name }}
-        </span>
-        <span class="text-gray-900 font-semibold">{{ article.author }}</span>
+    <span class="bg-black text-white px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">
+        {{ article.category.name }}
+    </span>
+    <div class="mt-3 flex items-center gap-3 text-sm mb-6">
+        {% if article.author.avatar %}
+            <img src="{{ article.author.avatar.url }}"
+                 class="w-6 h-6 rounded object-cover">
+        {% else %}
+            <span class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500">
+                {{ article.author.username|slice:":1"|upper }}
+            </span>
+        {% endif %}
+        <a href="{% url 'accounts:profile_view' article.author.username %}"
+           class="text-black font-semibold hover:underline">
+            {{ article.author }}
+        </a>
         <span class="text-gray-400">{{ article.created_at|smart_timesince }} назад</span>
     </div>
 
@@ -20,15 +31,115 @@
         {{ article.title }}
     </h1>
 
-    {% if article.image %}
-        <div class="mb-10">
-            <img src="{{ article.image.url }}" class="rounded-2xl w-full shadow-lg">
-        </div>
+    {% if user == article.author or user.is_admin %}
+    <div class="flex gap-2 mb-6">
+        <a href="{% url 'edit_article_step1' article.pk %}"
+           class="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Редактировать
+        </a>
+        <a href="{% url 'delete_article' article.pk %}"
+           class="flex items-center gap-1.5 px-3 py-1.5 border border-red-200 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+                <path d="M9 6V4h6v2"/>
+            </svg>
+            Удалить
+        </a>
+    </div>
     {% endif %}
+
+    {# Баннеры статуса #}
+    {% if article.status == 'pending' %}
+    <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 mb-6 text-sm text-orange-700">
+        Статья ожидает проверки администратором и пока не видна другим пользователям.
+    </div>
+    {% elif article.status == 'draft' %}
+    <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-6 text-sm text-gray-600">
+        Это черновик — статья не опубликована.
+    </div>
+    {% endif %}
+
+
 
     <div id="editorjs-content" class="article-body"></div>
 
 </div>
+
+{% if user.is_authenticated %}
+<div id="action-bar"
+     class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-white border border-gray-200 rounded-full shadow-lg px-3 py-2">
+
+    {# Закладка #}
+    <button
+        onclick="toggleBookmark({{ article.id }}, this)"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-500 hover:text-black hover:bg-gray-50 transition-colors"
+        title="В закладки"
+    >
+        <svg id="bookmark-icon-{{ article.id }}"
+            class="w-5 h-5 transition-colors {% if is_bookmarked %}text-black{% else %}text-gray-500{% endif %}"
+            viewBox="0 0 24 24"
+            fill="{% if is_bookmarked %}currentColor{% else %}none{% endif %}"
+            stroke="currentColor"
+            stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span class="hidden sm:inline">Закладки</span>
+    </button>
+
+    <span class="w-px h-5 bg-gray-200"></span>
+
+    {# Комментарии (якорь) #}
+    <a href="#comments"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span class="hidden sm:inline">Комментарии</span>
+    </a>
+
+    <span class="w-px h-5 bg-gray-200"></span>
+
+    {# Лайк #}
+    <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-500 hover:text-black hover:bg-gray-50 transition-colors">
+        <svg class="w-5 h-5 rotate-180" viewBox="-0.5 0 25 25" fill="none">
+            <path d="M8.66992 5.5V11.03" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.66992 11.03L11.4199 20.19C11.5048 20.4938 11.6864 20.7617 11.9372 20.953C12.1881 21.1443 12.4944 21.2486 12.8099 21.25V21.25C13.0016 21.2487 13.1912 21.2097 13.3679 21.1351C13.5445 21.0605 13.7047 20.9518 13.8394 20.8153C13.974 20.6788 14.0805 20.5171 14.1526 20.3395C14.2248 20.1618 14.2612 19.9718 14.2599 19.78V14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.00109 12.25C1.97626 12.7033 2.04411 13.157 2.2005 13.5832C2.35688 14.0094 2.59852 14.3993 2.91064 14.7289C3.22276 15.0586 3.59881 15.3212 4.01583 15.5007C4.43286 15.6801 4.88209 15.7727 5.33609 15.7727C5.79008 15.7727 6.23931 15.6801 6.65634 15.5007C7.07336 15.3212 7.44944 15.0586 7.76156 14.7289C8.07368 14.3993 8.31532 14.0094 8.47171 13.5832C8.62809 13.157 8.69594 12.7033 8.67111 12.25V6.62C8.69594 6.16668 8.62809 5.71308 8.47171 5.28687C8.31532 4.86065 8.07368 4.47074 7.76156 4.14105C7.44944 3.81136 7.07336 3.54878 6.65634 3.36932C6.23931 3.18986 5.79008 3.09729 5.33609 3.09729C4.88209 3.09729 4.43286 3.18986 4.01583 3.36932C3.59881 3.54878 3.22276 3.81136 2.91064 4.14105C2.59852 4.47074 2.35688 4.86065 2.2005 5.28687C2.04411 5.71308 1.97626 6.16668 2.00109 6.62V12.25Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.66998 6.62C8.66735 6.18006 8.75137 5.74394 8.9173 5.33649C9.08322 4.92904 9.32777 4.55824 9.63699 4.2453C9.94621 3.93237 10.314 3.68341 10.7195 3.51263C11.1249 3.34186 11.56 3.25262 12 3.25H16.12C17.0806 3.25072 18.0152 3.56303 18.7833 4.14001C19.5514 4.717 20.1117 5.52755 20.38 6.45001L21.88 11.53C21.9994 11.8677 22.0365 12.229 21.9881 12.5839C21.9397 12.9387 21.8074 13.277 21.602 13.5704C21.3966 13.8638 21.1241 14.104 20.8072 14.2709C20.4903 14.4378 20.1381 14.5266 19.78 14.53H14.28" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="hidden sm:inline">{{ article.likes }}</span>
+    </button>
+
+</div>
+
+<script>
+    function toggleBookmark(articleId) {
+        fetch(`/article/${articleId}/bookmark/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        })
+        .then(r => r.json())
+        .then(data => {
+            const icon = document.getElementById(`bookmark-icon-${articleId}`);
+            if (data.bookmarked) {
+                icon.setAttribute('fill', 'currentColor');
+                icon.classList.remove('text-gray-500');
+                icon.classList.add('text-black');
+            } else {
+                icon.setAttribute('fill', 'none');
+                icon.classList.remove('text-black');
+                icon.classList.add('text-gray-500');
+            }
+        });
+    }
+    </script>
+{% endif %}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
@@ -119,7 +230,6 @@
             }).join('');
         }
 
-        // Рендеринг контента
         const rawContent = '{{ article.content|escapejs }}';
         if (rawContent && rawContent !== 'null') {
             try {
@@ -128,7 +238,6 @@
                 const contentDiv = document.getElementById('editorjs-content');
                 contentDiv.innerHTML = htmlContent;
 
-                // Запускаем подсветку синтаксиса после вставки HTML
                 if (typeof Prism !== 'undefined') {
                     Prism.highlightAll();
                 }
@@ -140,13 +249,12 @@
 </script>
 
 <style>
-    /* Улучшаем читаемость ссылок внутри параграфов */
     .article-body p a {
         color: #000;
         text-decoration: underline;
         font-weight: 500;
     }
-    /* Стили для Prism.js (чтобы фон превью не конфликтовал с темой) */
+    /* Стили для Prism.js */
     pre[class*="language-"] {
         margin: 0 !important;
     }

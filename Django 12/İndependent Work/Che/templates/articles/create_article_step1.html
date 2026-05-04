@@ -1,0 +1,102 @@
+{% extends "main/base.html" %}
+
+{% block title %}Создание статьи{% endblock %}
+
+{% block content %}
+
+    <div class="max-w-4xl mx-auto bg-white p-4 text-black mt-8 ">
+        <h1 class="text-xl font-bold">Создание статьи</h1>
+    </div>
+
+    <div class="max-w-4xl mx-auto bg-white border border-gray-200 p-5 sm:p-8 text-black mt-8">
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            {{ form.media }}
+
+            <div>
+                {{ form.title }}
+            </div>
+
+            <div class="mt-8">
+                    {{ form.content }}
+            </div>
+
+            <button type="submit"
+                    class="bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition w-full mt-6">
+                Далее
+            </button>
+        </form>
+
+    </div>
+
+    <style>
+        [data-editorjs-wrapper] { border: none !important; max-width: 100% !important; width: 100% !important; z-index: 10 }
+        .ce-block__content, .ce-toolbar__content { max-width: 100% !important; margin: 0 !important; }
+
+
+        .ce-paragraph[data-placeholder]::before {
+            content: "" !important;
+        }
+
+        .ce-paragraph:empty::before {
+            content: "Нажмите ⇥Tab для вызова меню" !important;
+            display: block !important;
+            width: 100% !important;
+            height: 20px !important;
+            color: #9ca3af !important;
+            pointer-events: none !important;
+            position: absolute !important;
+        }
+
+
+
+        .codex-editor__redactor {
+            min-height: 400px !important;
+            position: relative !important;
+        }
+
+    </style>
+
+
+    {% if article %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const savedData = {{ article.content|safe }};
+
+                const interval = setInterval(function() {
+                    const wrapper = document.querySelector('[data-editorjs-wrapper]');
+                    if (!wrapper) return;
+
+                    const editorEl = wrapper.querySelector('.codex-editor');
+                    if (!editorEl) return;
+
+                    const editorId = wrapper.getAttribute('id');
+                    if (window.editors && window.editors[editorId]) {
+                        window.editors[editorId].isReady.then(() => {
+                            window.editors[editorId].render(savedData);
+                        });
+                        clearInterval(interval);
+                        return;
+                    }
+
+                    for (const key in window) {
+                        if (window[key] && window[key].isReady && window[key].render) {
+                            window[key].isReady.then(() => {
+                                window[key].render(savedData);
+                            });
+                            clearInterval(interval);
+                            return;
+                        }
+                    }
+                }, 200);
+
+                setTimeout(() => clearInterval(interval), 10000);
+            });
+        </script>
+    {% endif %}
+
+
+{% endblock %}
+
