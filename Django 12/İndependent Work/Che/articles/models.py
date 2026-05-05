@@ -49,8 +49,7 @@ class Article(models.Model):
         }
     )
 
-    likes = models.PositiveIntegerField(default=0)
-    dislikes = models.PositiveIntegerField(default=0)
+    views = models.PositiveIntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -98,8 +97,37 @@ class Article(models.Model):
             clean_fallback = strip_tags(str(self.content))
             return f'<p class="text-gray-700 mb-3">{clean_fallback[:150]}...</p>'
 
+    def average_rating(self):
+        ratings = self.ratings.all()
+
+        if not ratings:
+            return 0
+
+        return round(sum(r.score for r in ratings) / len(ratings), 1)
+
     def __str__(self):
         return self.title
+
+class Rating(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ratings'
+    )
+
+    article = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='ratings'
+    )
+
+    score = models.PositiveSmallIntegerField()
+
+    class Meta:
+        unique_together = ('user', 'article')
+
+    def __str__(self):
+        return f'{self.user} {self.article} : {self.score}'
 
 class Bookmark(models.Model):
     user = models.ForeignKey(

@@ -1,12 +1,13 @@
 import cloudinary.uploader
 from django.contrib.auth.decorators import login_required
+from django.db.models import Avg, F
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
 from accounts.models import Notification
 from articles.forms import CategoryForm, ArticleStepOneForm, ArticleStepTwoForm
-from articles.models import Article, Category, Bookmark
+from articles.models import Article, Category, Bookmark, Rating
 
 
 @csrf_exempt
@@ -160,15 +161,6 @@ def delete_category(request, pk):
 
     return render(request, 'articles/delete_category.html', {})
 
-
-def category_detail(request, pk):
-    category = get_object_or_404(Category, pk=pk)
-    articles = Article.objects.filter(category=category, status=Article.Status.PUBLISHED).order_by('-created_at')
-    return render(request, 'articles/category_detail.html', {
-        'category': category,
-        'articles': articles,
-    })
-
 @login_required
 def category_list_admin(request):
     if not request.user.is_admin:
@@ -195,11 +187,42 @@ def article_list(request):
 def article_detail(request, id):
     article = get_object_or_404(Article, id=id)
 
+    Article.objects.filter(id=id).update(views=F('views') + 1)
+
     is_bookmarked = False
+    user_rating = 0
+
     if request.user.is_authenticated:
         is_bookmarked = Bookmark.objects.filter(user=request.user, article=article).exists()
+        user_rating_obj = Rating.objects.filter(user=request.user, article=article).first()
+        if user_rating_obj:
+            user_rating = user_rating_obj.score
 
-    return render(request, 'articles/detail.html', {'article': article, 'is_bookmarked': is_bookmarked})
+    return render(request, 'articles/detail.html', {
+        'article': article,
+        'is_bookmarked': is_bookmarked,
+        'user_rating': user_rating,
+    })
+
+def popular_articles(request):
+    articles = Article.objects.filter(
+        status=Article.Status.PUBLISHED
+    ).annotate(
+        avg_rating=Avg('ratings__score')
+    ).filter(
+        avg_rating__gte=4
+    ).order_by('-avg_rating')
+
+    bookmarked_ids = set()
+    if request.user.is_authenticated:
+        bookmarked_ids = set(
+            Bookmark.objects.filter(user=request.user).values_list('article_id', flat=True)
+        )
+
+    return render(request, 'articles/popular.html', {
+        'articles': articles,
+        'bookmarked_ids': bookmarked_ids,
+    })
 
 @login_required
 def toggle_bookmark(request, article_id):
@@ -301,3 +324,57 @@ def approve_article(request, pk):
         article.save()
 
     return redirect('accounts:admin_panel')
+
+@login_required
+def rate_article(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    article = get_object_or_404(Article, pk=pk)
+
+    if article.author == request.user:
+        return JsonResponse({'error': 'Нельзя оценивать свою статью'}, status=403)
+
+    score = int(request.POST.get('score', 0))
+
+    if score < 1 or score > 5:
+        return JsonResponse({'error': 'Некорректная оценка'}, status=400)
+
+    existing = Rating.objects.filter(user=request.user, article=article).first()
+
+    # Если оценка уже существует то она отменяется
+    if existing and existing.score == score:
+        existing.delete()
+        return JsonResponse({
+            'average': article.average_rating(),
+            'count': article.ratings.count(),
+            'user_rating': 0,
+        })
+
+    Rating.objects.update_or_create(
+        user=request.user,
+        article=article,
+        defaults={'score': score},
+    )
+
+    return JsonResponse({
+        'average': article.average_rating(),
+        'count': article.ratings.count(),
+        'user_rating': score,
+    })
+
+def categories_page(request):
+    categories = Category.objects.all().order_by('name')
+    for category in categories:
+        category.published_count = category.articles.filter(
+            status=Article.Status.PUBLISHED
+        ).count()
+    return render(request, 'articles/categories_page.html', {'categories': categories})
+
+def category_detail(request, slug):
+    category = get_object_or_404(Category, slug=slug)
+    articles = Article.objects.filter(category=category, status=Article.Status.PUBLISHED).order_by('-created_at')
+    return render(request, 'articles/category_detail.html', {
+        'category': category,
+        'articles': articles,
+    })

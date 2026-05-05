@@ -1,0 +1,136 @@
+{% extends "main/base.html" %}
+{% load article_filters %}
+
+{% block title %}Популярное{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+
+    <h1 class="text-xl font-bold text-gray-900 mt-8 mb-4">Популярное</h1>
+
+    {% for article in articles %}
+        <div class="bg-white p-5">
+            <div class="flex items-center gap-2 mb-2">
+                <p class="text-xs font-bold text-gray-400 uppercase">
+                    Статья
+                </p>
+                <a href="{% url 'category_detail' article.category.slug %}"
+                   class="text-xs text-gray-400 font-semibold hover:underline">
+                    {{ article.category.name }}
+                </a>
+            </div>
+
+            <p class="text-[12px] h-9 flex items-center gap-1">
+                {% if article.author.avatar %}
+                    <img src="{{ article.author.avatar.url }}" class="w-6 h-6 rounded object-cover">
+                {% else %}
+                    <span class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500">
+                        {{ article.author.username|slice:":1"|upper }}
+                    </span>
+                {% endif %}
+                <a href="{% url 'accounts:profile_view' article.author.username %}"
+                   class="text-black font-semibold hover:underline">{{ article.author }}</a>
+                <span class="text-gray-400">{{ article.created_at|smart_timesince }} назад</span>
+            </p>
+
+            <a href="{% url 'article_detail' article.id %}">
+                <h1 class="text-2xl font-bold mb-2 text-black">{{ article.title }}</h1>
+            </a>
+
+            {# Просмотры #}
+            <span class="flex items-center gap-1 mb-3">
+                <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span class="text-xs text-gray-500">{{ article.views }}</span>
+            </span>
+
+            {% if article.image %}
+                <img src="{{ article.image.url }}" class="rounded-lg mb-3 w-full">
+            {% endif %}
+
+            <p class="text-gray-700 mb-3">{{ article.mini_content|safe }}</p>
+
+            <div class="flex items-center justify-between">
+                <a href="{% url 'article_detail' article.id %}"
+                   class="text-sm text-black font-medium border p-2 hover:text-white hover:bg-black transition-colors">
+                    Читать далее
+                </a>
+            </div>
+
+            <div class="flex gap-3 text-sm text-black mt-3">
+                {# Рейтинг #}
+                <span class="flex items-center gap-1 text-yellow-400">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span class="text-gray-700 text-xs">{{ article.avg_rating|floatformat:1 }}</span>
+                </span>
+
+                {# Закладка #}
+                {% if user.is_authenticated %}
+                <button onclick="toggleBookmark({{ article.id }})"
+                        class="group flex items-center gap-1 px-2 py-1 rounded-full text-sm hover:bg-gray-100 transition-colors">
+                    <svg id="bookmark-icon-{{ article.id }}"
+                         class="w-5 h-5 transition-colors {% if article.id in bookmarked_ids %}text-black{% else %}text-gray-400 group-hover:text-black{% endif %}"
+                         viewBox="0 0 24 24"
+                         fill="{% if article.id in bookmarked_ids %}currentColor{% else %}none{% endif %}"
+                         stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span id="bookmark-count-{{ article.id }}"
+                          class="text-xs {% if article.id in bookmarked_ids %}text-black{% else %}text-gray-400 group-hover:text-black{% endif %}">
+                        {{ article.bookmarks.count }}
+                    </span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <div class="flex items-center justify-center py-12 gap-6 bg-gray-50 rounded-xl px-6 mt-8">
+            <span class="text-[80px] font-bold text-gray-200 leading-none select-none shrink-0">★</span>
+            <div>
+                <p class="text-xl font-semibold text-gray-700">Популярных статей пока нет</p>
+                <p class="text-sm text-gray-400">Здесь появятся статьи с рейтингом 4 и выше</p>
+            </div>
+        </div>
+    {% endfor %}
+
+</div>
+
+<script>
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) window.location.reload();
+});
+
+function toggleBookmark(articleId) {
+    fetch(`/article/${articleId}/bookmark/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+    })
+    .then(r => r.json())
+    .then(data => {
+        const icon = document.getElementById(`bookmark-icon-${articleId}`);
+        const count = document.getElementById(`bookmark-count-${articleId}`);
+        const current = parseInt(count.textContent) || 0;
+        if (data.bookmarked) {
+            icon.setAttribute('fill', 'currentColor');
+            icon.classList.remove('text-gray-400');
+            icon.classList.add('text-black');
+            count.classList.remove('text-gray-400');
+            count.classList.add('text-black');
+            count.textContent = current + 1;
+        } else {
+            icon.setAttribute('fill', 'none');
+            icon.classList.remove('text-black');
+            icon.classList.add('text-gray-400');
+            count.classList.remove('text-black');
+            count.classList.add('text-gray-400');
+            count.textContent = Math.max(0, current - 1);
+        }
+    });
+}
+</script>
+
+{% endblock %}
